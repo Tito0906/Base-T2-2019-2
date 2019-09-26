@@ -1,24 +1,38 @@
 #include <stdio.h>
 #include "search/bfs.h"
 #include <unistd.h>
+#include <string.h>
 #include "watcher/watcher.h"
 
-void show_solution(Board* current)
+void show_solution(Board* current, bool watch)
 {
   if(current -> parent)
   {
-    show_solution(current -> parent);
+    show_solution(current -> parent, watch);
   }
-  watcher_draw_board(current);
-  usleep(500000);
+  if (watch)
+  {
+    watcher_draw_board(current);
+    usleep(500000);
+  }
+  else
+  {
+    board_print(current);
+  }
 }
 
 int main(int argc, char *argv[])
 {
-  if (argc != 3)
+  if (argc != 3 && argc != 4)
   {
-    printf("Modo de uso: ./baba <rule_file.txt> <board_file.txt>\n");
+    printf("Modo de uso: ./baba <rule_file.txt> <board_file.txt> [-w]\n");
+    printf("El paramatro opcional sirve para usar la interfaz grafica [-w]\n");
     return 0;
+  }
+  bool watch = false;
+  if (argc == 4 && strcmp(argv[3], "-w") == 0)
+  {
+    watch = true;
   }
 
   // Leo las reglas
@@ -27,7 +41,11 @@ int main(int argc, char *argv[])
   // Leo el tablero
   Board* board = board_init(argv[2]);
 
-  watcher_open(board -> height, board -> width);
+  // Si hay interfaz
+  if (watch)
+  {
+    watcher_open(board -> height, board -> width);
+  }
 
   // Creo una tabla de hash
   Table* table = table_init(board -> height, board -> width);
@@ -43,7 +61,7 @@ int main(int argc, char *argv[])
   else
   {
     // Mostramos la solución
-    show_solution(sol);
+    show_solution(sol, watch);
 
     // Libero el tablero solucion
     board_destroy(sol);
@@ -56,7 +74,10 @@ int main(int argc, char *argv[])
   // Libero las reglas
   destroy_rules();
 
-  watcher_close();
+  if (watch)
+  {
+    watcher_close();
+  }
 
   // Todo termino bien
   return 0;
