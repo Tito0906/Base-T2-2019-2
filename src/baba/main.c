@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
   if (watch)
   {
     watcher_open(board -> height, board -> width);
+	watcher_draw_board(board);
   }
 
   // Creo una tabla de hash
